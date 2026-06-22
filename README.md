@@ -6,7 +6,7 @@
 
 ---
 
-## 🎧 [→ Live Demo Page with Audio Players](https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/)
+## 🎧 [→ Live Demo Page with Audio Players](https://shelynxu.github.io/speech_predemo/)
 
 *(Enable GitHub Pages after pushing — see setup instructions below)*
 
