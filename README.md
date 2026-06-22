@@ -82,16 +82,4 @@ docs/
 
 ---
 
-## Enabling GitHub Pages
-
-After pushing this repo:
-
-1. Go to **Settings → Pages** in this GitHub repository
-2. Under **Source**, select **Deploy from a branch**
-3. Choose branch `main`, folder `/docs`
-4. Click **Save**
-5. The demo page will be live at `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/` within 1–2 minutes
-
----
-
 *Audio samples are for research evaluation only — not for public redistribution.*
