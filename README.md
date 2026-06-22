@@ -8,8 +8,6 @@
 
 ## 🎧 [→ Live Demo Page with Audio Players](https://shelynxu.github.io/speech_predemo/)
 
-*(Enable GitHub Pages after pushing — see setup instructions below)*
-
 ---
 
 ## What is this?
