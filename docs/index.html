@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross-Cultural Emotional TTS — Pre-release Demo</title>
+<style>
+  :root {
+    --bg:        #0d0d0d;
+    --bg2:       #141414;
+    --bg3:       #1c1c1c;
+    --green:     #4caf50;
+    --green-dim: #2e7d32;
+    --text:      #e8e8e8;
+    --muted:     #888;
+    --border:    #2a2a2a;
+    --accent:    #a5d6a7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1a0d 100%);
+    border-bottom: 2px solid var(--green-dim);
+    padding: 48px 32px 40px;
+    text-align: center;
+  }
+  .tag {
+    display: inline-block;
+    background: var(--green-dim);
+    color: #c8e6c9;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  header h1 {
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 700;
+    color: #ffffff;
+    max-width: 900px;
+    margin: 0 auto 12px;
+    letter-spacing: -0.3px;
+  }
+  header p.sub {
+    font-size: 16px;
+    color: var(--accent);
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto 28px;
+  }
+  .badges {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 4px;
+  }
+  .badge strong { color: var(--accent); }
+
+  /* ── Main content ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  section { margin-bottom: 56px; }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green);
+    border-left: 3px solid var(--green);
+    padding-left: 14px;
+    margin-bottom: 20px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 24px 0 10px;
+  }
+
+  p { color: #ccc; font-size: 15px; margin-bottom: 12px; }
+  p + p { margin-top: 0; }
+
+  /* ── Pipeline diagram ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green-dim);
+    border-radius: 8px;
+    padding: 28px 20px;
+    margin: 20px 0;
+  }
+  .pipe-box {
+    background: var(--bg3);
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 120px;
+    font-size: 13px;
+  }
+  .pipe-box .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .pipe-box .label { color: #fff; font-weight: 600; display: block; }
+  .pipe-box .sub-label { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; }
+  .pipe-arrow {
+    color: var(--green);
+    font-size: 20px;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .pipe-highlight {
+    border-color: var(--green);
+    background: #1a2a1a;
+  }
+  .pipe-highlight .label { color: var(--accent); }
+
+  /* ── Emotion info pills ── */
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .pill {
+    font-size: 12px;
+    padding: 3px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .emo-ang { border-color: #c62828; color: #ef9a9a; background: #1a0a0a; }
+  .emo-fea { border-color: #6a1b9a; color: #ce93d8; background: #120a1a; }
+  .emo-hap { border-color: #1565c0; color: #90caf9; background: #0a0f1a; }
+  .emo-sad { border-color: #37474f; color: #b0bec5; background: #0a0e10; }
+  .emo-neu { border-color: #558b2f; color: #aed581; background: #0a1005; }
+  .emo-dis { border-color: #6d4c41; color: #bcaaa4; background: #120d0a; }
+  .emo-sur { border-color: #e65100; color: #ffcc80; background: #1a0e00; }
+
+  /* ── Original samples ── */
+  .orig-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .orig-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .orig-card .emo-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+  .orig-card .emo-name {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .orig-card audio { width: 100%; height: 32px; }
+
+  /* ── Comparison table ── */
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 680px;
+  }
+  thead { background: #0f1f0f; }
+  thead th {
+    padding: 14px 10px;
+    text-align: left;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--green-dim);
+  }
+  thead th:first-child { width: 110px; }
+
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #111; }
+  tbody tr:nth-child(odd) { background: var(--bg2); }
+  tbody tr:hover { background: #1a1a1a; }
+
+  td { padding: 12px 10px; vertical-align: middle; }
+  td:first-child {
+    font-weight: 700;
+    font-size: 13px;
+    color: #ddd;
+    white-space: nowrap;
+  }
+
+  audio {
+    width: 100%;
+    min-width: 130px;
+    height: 30px;
+    accent-color: var(--green);
+  }
+
+  audio::-webkit-media-controls-panel { background: #1e1e1e; }
+
+  .no-sample {
+    color: var(--border);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  /* ── Method chips ── */
+  .method-chip {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid #333;
+    color: var(--muted);
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  /* ── Video section ── */
+  .video-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  video {
+    border-radius: 8px;
+    max-width: 380px;
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+  }
+  .video-info { flex: 1; min-width: 220px; }
+  .video-info p { font-size: 14px; }
+  .video-info ul {
+    list-style: none;
+    margin-top: 12px;
+    padding: 0;
+  }
+  .video-info li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+  .video-info li::before { content: "→"; color: var(--green); flex-shrink: 0; }
+
+  /* ── Status / notes ── */
+  .callout {
+    background: #0f1f0f;
+    border: 1px solid var(--green-dim);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #aaa;
+  }
+  .callout strong { color: var(--accent); }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ HEADER ═══════════════════════════════════ -->
+<header>
+  <span class="tag">Pre-release Demo · PhD Research</span>
+  <h1>Cross-Cultural Emotional Co-Speech<br>Facial Expression Generation Model</h1>
+  <p class="sub">Cue Weighting of Prosody and Facial Expressions<br>in Japanese, Mandarin, and English</p>
+  <div class="badges">
+    <span class="badge">🎓 <strong>HCI · Cross-Cultural Psychology</strong></span>
+    <span class="badge">🔬 <strong>Status:</strong> Pre-release / IRB Preparation</span>
+    <span class="badge">🌐 <strong>Languages:</strong> Japanese · Mandarin · English</span>
+    <span class="badge">🤖 <strong>5 TTS Models Evaluated</strong></span>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════ RESEARCH OVERVIEW ══════════════════════════ -->
+<section>
+  <h2>Research Overview</h2>
+
+  <p>
+    This project develops a <strong style="color:#fff">pipeline for generating emotionally expressive, culturally-adapted
+    speech and 3D facial animation</strong> to serve as stimuli in a cross-cultural perception experiment.
+    The central research question is how people weight <em>prosody</em> (speech melody, rhythm) versus
+    <em>facial expressions</em> when interpreting emotion across Japanese, Mandarin, and English.
+  </p>
+
+  <p>
+    Stimuli are created by (1) synthesising emotional speech via state-of-the-art TTS models
+    conditioned on a Japanese female reference speaker, (2) driving a 3D avatar with the resulting
+    audio to produce lip-synced facial animations, and (3) inserting emotion expression either
+    <em>congruent</em> or <em>incongruent</em> with the speech — creating the experimental contrast.
+  </p>
+
+  <h3>Generation Pipeline</h3>
+
+  <div class="pipeline">
+    <div class="pipe-box">
+      <span class="icon">📝</span>
+      <span class="label">Text Input</span>
+      <span class="sub-label">JP / ZH / EN</span>
+    </div>
+    <span class="pipe-arrow">→</span>
+    <div class="pipe-box pipe-highlight">
+      <span class="icon">🗣️</span>
+      <span class="label">TTS Model</span>
+      <span class="sub-label">5 systems evaluated</span>
+    </div>
+    <span class="pipe-arrow">→</span>
+    <div class="pipe-box">
+      <span class="icon">🎵</span>
+      <span class="label">Audio</span>
+      <span class="sub-label">Happy · Angry · Sad…</span>
+    </div>
+    <span class="pipe-arrow">→</span>
+    <div class="pipe-box pipe-highlight">
+      <span class="icon">🤖</span>
+      <span class="label">Speech→Face</span>
+      <span class="sub-label">Emotion prediction</span>
+    </div>
+    <span class="pipe-arrow">→</span>
+    <div class="pipe-box">
+      <span class="icon">🎬</span>
+      <span class="label">3D Avatar</span>
+      <span class="sub-label">Lip-sync + expression</span>
+    </div>
+    <span class="pipe-arrow">→</span>
+    <div class="pipe-box pipe-highlight">
+      <span class="icon">🧪</span>
+      <span class="label">Stimuli Clips</span>
+      <span class="sub-label">Congruent / Incongruent</span>
+    </div>
+  </div>
+
+  <h3>Emotion Categories</h3>
+  <div class="pills">
+    <span class="pill emo-hap">😊 Happy</span>
+    <span class="pill emo-ang">😠 Angry</span>
+    <span class="pill emo-sad">😢 Sad</span>
+    <span class="pill emo-fea">😨 Fear</span>
+    <span class="pill emo-dis">🤢 Disgust</span>
+    <span class="pill emo-sur">😲 Surprise</span>
+    <span class="pill emo-neu">😐 Neutral</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ORIGINAL SAMPLES ══════════════════════════ -->
+<section>
+  <h2>Reference Speaker — Original Japanese Speech</h2>
+  <p>
+    All TTS models use a single Japanese female speaker as the voice identity reference.
+    These six clips are the original recorded speech samples that provide timbre and speaking style,
+    driving the cross-lingual transfer.
+  </p>
+
+  <div class="orig-grid">
+    <div class="orig-card">
+      <span class="emo-icon">😊</span>
+      <span class="emo-name" style="color:#90caf9">Happy</span>
+      <audio controls src="audio/original/happy.wav"></audio>
+    </div>
+    <div class="orig-card">
+      <span class="emo-icon">😠</span>
+      <span class="emo-name" style="color:#ef9a9a">Angry</span>
+      <audio controls src="audio/original/anger.wav"></audio>
+    </div>
+    <div class="orig-card">
+      <span class="emo-icon">😢</span>
+      <span class="emo-name" style="color:#b0bec5">Sad</span>
+      <audio controls src="audio/original/sad.wav"></audio>
+    </div>
+    <div class="orig-card">
+      <span class="emo-icon">😨</span>
+      <span class="emo-name" style="color:#ce93d8">Fear</span>
+      <audio controls src="audio/original/fear.wav"></audio>
+    </div>
+    <div class="orig-card">
+      <span class="emo-icon">🤢</span>
+      <span class="emo-name" style="color:#bcaaa4">Disgust</span>
+      <audio controls src="audio/original/disgust.wav"></audio>
+    </div>
+    <div class="orig-card">
+      <span class="emo-icon">😲</span>
+      <span class="emo-name" style="color:#ffcc80">Surprise</span>
+      <audio controls src="audio/original/surprise.wav"></audio>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ CROSS-LINGUAL TTS COMPARISON ══════════════════ -->
+<section>
+  <h2>Cross-Lingual TTS — Model Comparison</h2>
+  <p>
+    Five TTS systems were evaluated for their ability to transfer the reference speaker's voice
+    identity to a new language while preserving emotional expressiveness.
+    Each model receives the <strong style="color:#fff">same reference audio</strong> and <strong style="color:#fff">target-language text</strong>;
+    emotion is controlled via the model's native mechanism (emotion vector, reference WAV, or CFG guidance).
+  </p>
+
+  <div class="callout">
+    <strong>How to read this table:</strong> Each row is an emotion. Each column is a model.
+    Press ▶ to play. Compare how well each model captures the emotional quality of the
+    original Japanese speaker when producing speech in English.
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Emotion</th>
+          <th>CosyVoice2 <span class="method-chip">cross-lingual CFG</span></th>
+          <th>IndexTTS2 <span class="method-chip">emotion vector</span></th>
+          <th>VoxCPM2 <span class="method-chip">cfg_value</span></th>
+          <th>OpenVoice v2 <span class="method-chip">voice transfer</span></th>
+          <th>X-Voice <span class="method-chip">voice transfer</span></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td>😊 Happy</td>
+          <td><audio controls src="audio/tts/cosyvoice2/hap.wav"></audio></td>
+          <td><audio controls src="audio/tts/indextts2/hap.wav"></audio></td>
+          <td><audio controls src="audio/tts/voxcpm2/hap.wav"></audio></td>
+          <td><audio controls src="audio/tts/openvoice_v2/hap.wav"></audio></td>
+          <td><audio controls src="audio/tts/x_voice/hap.wav"></audio></td>
+        </tr>
+
+        <tr>
+          <td>😠 Angry</td>
+          <td><audio controls src="audio/tts/cosyvoice2/ang.wav"></audio></td>
+          <td><audio controls src="audio/tts/indextts2/ang.wav"></audio></td>
+          <td><audio controls src="audio/tts/voxcpm2/ang.wav"></audio></td>
+          <td><audio controls src="audio/tts/openvoice_v2/ang.wav"></audio></td>
+          <td><audio controls src="audio/tts/x_voice/ang.wav"></audio></td>
+        </tr>
+
+        <tr>
+          <td>😢 Sad</td>
+          <td><audio controls src="audio/tts/cosyvoice2/sad.wav"></audio></td>
+          <td><audio controls src="audio/tts/indextts2/sad.wav"></audio></td>
+          <td><audio controls src="audio/tts/voxcpm2/sad.wav"></audio></td>
+          <td><audio controls src="audio/tts/openvoice_v2/sad.wav"></audio></td>
+          <td><audio controls src="audio/tts/x_voice/sad.wav"></audio></td>
+        </tr>
+
+        <tr>
+          <td>😨 Fear</td>
+          <td><audio controls src="audio/tts/cosyvoice2/fea.wav"></audio></td>
+          <td><audio controls src="audio/tts/indextts2/fea.wav"></audio></td>
+          <td><audio controls src="audio/tts/voxcpm2/fea.wav"></audio></td>
+          <td><audio controls src="audio/tts/openvoice_v2/fea.wav"></audio></td>
+          <td><audio controls src="audio/tts/x_voice/fea.wav"></audio></td>
+        </tr>
+
+        <tr>
+          <td>😐 Neutral</td>
+          <td><audio controls src="audio/tts/cosyvoice2/neu.wav"></audio></td>
+          <td><audio controls src="audio/tts/indextts2/neu.wav"></audio></td>
+          <td><audio controls src="audio/tts/voxcpm2/neu.wav"></audio></td>
+          <td><audio controls src="audio/tts/openvoice_v2/neu.wav"></audio></td>
+          <td><audio controls src="audio/tts/x_voice/neu.wav"></audio></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ LIP-SYNC SAMPLE ══════════════════════════ -->
+<section>
+  <h2>3D Avatar — Lip-Sync &amp; Facial Expression Sample</h2>
+
+  <div class="video-card">
+    <video controls src="video/hap01.mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="video-info">
+      <h3 style="margin-top:0">Happy — Sample Stimulus</h3>
+      <p>
+        The 3D avatar is driven by the synthesised speech audio.
+        Lip synchronisation is computed from the audio signal,
+        while facial expression can be set congruent (happy expression + happy speech)
+        or incongruent (neutral expression + happy speech) for the experimental condition.
+      </p>
+      <ul>
+        <li>Avatar: Unreal Engine 5 MetaHuman</li>
+        <li>Lip-sync: Pixel Streaming + ARKit blendshapes</li>
+        <li>Expression: driven from Speech-to-Face prediction model</li>
+        <li>Condition type: Congruent (this sample)</li>
+        <li>Language: English (cross-lingual from JP reference)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ RESEARCH STATUS ═══════════════════════════ -->
+<section>
+  <h2>Current Status &amp; Next Steps</h2>
+
+  <div class="callout">
+    <strong>Pre-release:</strong> This demo page is shared for early feedback before IRB submission.
+    Audio samples, avatar design, and experimental protocol are subject to revision.
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; margin-top:16px;">
+
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px;">
+      <div style="color:var(--green); font-size:18px; margin-bottom:8px;">✅</div>
+      <div style="font-weight:600; color:#ddd; font-size:14px; margin-bottom:6px;">TTS Pipeline</div>
+      <div style="font-size:13px; color:var(--muted);">5 models evaluated for cross-lingual voice transfer with emotion control.</div>
+    </div>
+
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px;">
+      <div style="color:var(--green); font-size:18px; margin-bottom:8px;">✅</div>
+      <div style="font-weight:600; color:#ddd; font-size:14px; margin-bottom:6px;">Avatar Animation</div>
+      <div style="font-size:13px; color:var(--muted);">UE5 MetaHuman with speech-driven lip-sync and expression blendshapes.</div>
+    </div>
+
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px;">
+      <div style="color:#ffb74d; font-size:18px; margin-bottom:8px;">🔄</div>
+      <div style="font-weight:600; color:#ddd; font-size:14px; margin-bottom:6px;">Emotion Trajectory TTS</div>
+      <div style="font-size:13px; color:var(--muted);">TED-TTS and DCFG methods for intra-utterance emotion arc synthesis.</div>
+    </div>
+
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px;">
+      <div style="color:#90a4ae; font-size:18px; margin-bottom:8px;">📋</div>
+      <div style="font-weight:600; color:#ddd; font-size:14px; margin-bottom:6px;">IRB Submission</div>
+      <div style="font-size:13px; color:var(--muted);">Ethics review for the perception experiment with JP / ZH / EN participants.</div>
+    </div>
+
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px;">
+      <div style="color:#90a4ae; font-size:18px; margin-bottom:8px;">🧪</div>
+      <div style="font-weight:600; color:#ddd; font-size:14px; margin-bottom:6px;">Perception Experiment</div>
+      <div style="font-size:13px; color:var(--muted);">Cross-cultural AV emotion rating study with real participants.</div>
+    </div>
+
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px;">
+      <div style="color:#90a4ae; font-size:18px; margin-bottom:8px;">📊</div>
+      <div style="font-weight:600; color:#ddd; font-size:14px; margin-bottom:6px;">Analysis &amp; Writing</div>
+      <div style="font-size:13px; color:var(--muted);">Mixed-effects models on cue-weighting differences across cultures.</div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>PhD Research Demo · Cross-Cultural Emotional TTS &amp; Avatar Generation · 2025</p>
+  <p style="margin-top:8px; font-size:12px;">
+    Audio samples are for internal evaluation only — not for redistribution.
+    Reference speaker consent obtained for research use.
+  </p>
+</footer>
+
+</body>
+</html>
